@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,8 +37,8 @@ public final class MyHttp {
 				conn.setRequestProperty("Content-Type", contentType);
 			}
 			conn.setRequestProperty("Upgrade-Insecure-Requests", "1");
-			conn.setRequestProperty("User-Agent", String.format("%s/%s/%s/%s/%s/%s/%s", "Windows", "Chrome", "Safari",
-					"QQBrowser", "Mozilla", "Firefox", "IE"));
+			conn.setRequestProperty("User-Agent", String.format("%s/%s/%s/%s/%s/%s/%s", "Windows",
+					"Chrome", "Safari", "QQBrowser", "Mozilla", "Firefox", "IE"));
 			return conn;
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
@@ -73,12 +74,11 @@ public final class MyHttp {
 	 */
 	public static String getContent(String url) {
 		URLConnection conn = getURLConnection(url, null, null);
-		return getResponseContent(conn);
+		return getResponseContent(conn, StandardCharsets.UTF_8);
 	}
 
-	private static String getResponseContent(URLConnection conn) {
-		try (BufferedReader br = new BufferedReader(
-				new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+	public static String getResponseContent(URLConnection conn, Charset cs) {
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), cs))) {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
 			while (line != null) {
@@ -114,7 +114,7 @@ public final class MyHttp {
 				}
 				out.write(sb.toString().getBytes(StandardCharsets.UTF_8));
 			}
-			return getResponseContent(conn);
+			return getResponseContent(conn, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -134,7 +134,7 @@ public final class MyHttp {
 			if (json != null && json.trim().length() > 0) {
 				out.write(json.getBytes(StandardCharsets.UTF_8));
 			}
-			return getResponseContent(conn);
+			return getResponseContent(conn, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
