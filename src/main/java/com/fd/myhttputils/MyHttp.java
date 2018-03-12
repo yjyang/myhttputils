@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -23,9 +24,21 @@ import java.util.Map.Entry;
  *
  */
 public final class MyHttp {
+	public static URLConnection openConnection(String url, Proxy proxy) {
+		try {
+			if (proxy != null) {
+				return new URL(url).openConnection(proxy);
+			} else {
+				return new URL(url).openConnection();
+			}
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	public static URLConnection getURLConnection(String url, String contentType, String cookie) {
 		try {
-			URLConnection conn = new URL(url).openConnection();
+			URLConnection conn = openConnection(url, null);
 			conn.setConnectTimeout(10000);
 			if (!conn.getDoOutput()) {
 				conn.setDoOutput(true);
@@ -37,7 +50,7 @@ public final class MyHttp {
 				conn.setRequestProperty("Content-Type", contentType);
 			}
 			conn.setRequestProperty("Upgrade-Insecure-Requests", "1");
-			conn.setRequestProperty("User-Agent", String.format("%s/%s/%s/%s/%s/%s/%s", "Windows",
+			conn.setRequestProperty("User-Agent", String.format("%s/%s/%s/%s/%s/%s/%s/%s", "Windows", System.nanoTime(),
 					"Chrome", "Safari", "QQBrowser", "Mozilla", "Firefox", "IE"));
 			return conn;
 		} catch (Exception e) {
