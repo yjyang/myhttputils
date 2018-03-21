@@ -24,6 +24,8 @@ import java.util.Map.Entry;
  *
  */
 public final class MyHttp {
+	private static final int D_TIMEOUT = 10000;
+
 	private static URLConnection openConnection(String url, Proxy proxy) {
 		try {
 			if (proxy != null) {
@@ -36,14 +38,72 @@ public final class MyHttp {
 		}
 	}
 
+	/**
+	 * 获取响应状态码
+	 * 
+	 * @param url
+	 * @param contentType
+	 * @param cookie
+	 * @param proxy
+	 * @return
+	 */
+	public static int getResponseCode(String url, String contentType, String cookie, Proxy proxy) {
+		return getResponseCode(url, contentType, cookie, proxy, D_TIMEOUT);
+	}
+
+	/**
+	 * 获取响应状态码
+	 * 
+	 * @param url
+	 * @param contentType
+	 * @param cookie
+	 * @param proxy
+	 * @param timeout
+	 * @return
+	 */
+	public static int getResponseCode(String url, String contentType, String cookie, Proxy proxy, int timeout) {
+		URLConnection conn = getUrlConnection(url, contentType, cookie, proxy, timeout);
+		return getResponseCode(conn);
+	}
+
+	/**
+	 * 获取重定向地址
+	 * 
+	 * @param conn
+	 * @return
+	 */
+	public static String getLocation(URLConnection conn) {
+		return conn.getHeaderField("Location");
+	}
+
+	/**
+	 * 获取响应状态码
+	 * 
+	 * @param conn
+	 * @return
+	 */
+	public static int getResponseCode(URLConnection conn) {
+		String headerField = conn.getHeaderField(0);
+		return Integer.valueOf(headerField.split("\\s+")[1]);
+	}
+
+	public static URLConnection getURLConnection(String url, String contentType, String cookie, int timeout) {
+		return getUrlConnection(url, contentType, cookie, null, timeout);
+	}
+
 	public static URLConnection getURLConnection(String url, String contentType, String cookie) {
-		return getUrlConnection(url, contentType, cookie, null);
+		return getUrlConnection(url, contentType, cookie, null, D_TIMEOUT);
 	}
 
 	public static URLConnection getUrlConnection(String url, String contentType, String cookie, Proxy proxy) {
+		return getUrlConnection(url, contentType, cookie, proxy, D_TIMEOUT);
+	}
+
+	public static URLConnection getUrlConnection(String url, String contentType, String cookie, Proxy proxy,
+			int timeout) {
 		try {
 			URLConnection conn = openConnection(url, proxy);
-			conn.setConnectTimeout(10000);
+			conn.setConnectTimeout(timeout);
 			if (!conn.getDoOutput()) {
 				conn.setDoOutput(true);
 			}
