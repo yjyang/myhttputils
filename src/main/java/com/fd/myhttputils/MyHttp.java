@@ -24,7 +24,7 @@ import java.util.Map.Entry;
  *
  */
 public final class MyHttp {
-	public static URLConnection openConnection(String url, Proxy proxy) {
+	private static URLConnection openConnection(String url, Proxy proxy) {
 		try {
 			if (proxy != null) {
 				return new URL(url).openConnection(proxy);
@@ -37,8 +37,12 @@ public final class MyHttp {
 	}
 
 	public static URLConnection getURLConnection(String url, String contentType, String cookie) {
+		return getUrlConnection(url, contentType, cookie, null);
+	}
+
+	public static URLConnection getUrlConnection(String url, String contentType, String cookie, Proxy proxy) {
 		try {
-			URLConnection conn = openConnection(url, null);
+			URLConnection conn = openConnection(url, proxy);
 			conn.setConnectTimeout(10000);
 			if (!conn.getDoOutput()) {
 				conn.setDoOutput(true);
