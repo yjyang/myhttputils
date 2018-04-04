@@ -233,4 +233,52 @@ public final class MyHttp {
 		}
 		return null;
 	}
+
+	/**
+	 * 图片上传
+	 * 
+	 * @param img
+	 * @param url
+	 * @return
+	 */
+	public static String uploadImage(byte[] img, String url) {
+		return uploadFile(img, url, "img1", String.format("%s.%s", System.nanoTime(), "jpg"), "image/jpeg");
+	}
+
+	/**
+	 * 文件上传
+	 * 
+	 * @param img
+	 * @param url
+	 * @param inputName
+	 * @param filename
+	 * @param contentType
+	 * @return
+	 */
+	public static String uploadFile(byte[] img, String url, String inputName, String filename, String contentType) {
+		URLConnection uc = getURLConnection(url, null, null);
+		String boundary = String.format("----WebKitFormBoundary%s", System.nanoTime());
+		uc.setRequestProperty("Content-Type", String.format("multipart/form-data; boundary=%s", boundary));
+		uc.setUseCaches(false);
+		uc.setRequestProperty("Upgrade-Insecure-Requests", "1");
+		try (OutputStream os = uc.getOutputStream();) {
+			os.write(String.format("--%s", boundary).getBytes(StandardCharsets.UTF_8));
+			os.write(CRLF.getBytes(StandardCharsets.UTF_8));
+			os.write(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", inputName, filename)
+					.getBytes(StandardCharsets.UTF_8));
+			os.write(CRLF.getBytes(StandardCharsets.UTF_8));
+			os.write(String.format("Content-Type: %s", contentType).getBytes(StandardCharsets.UTF_8));
+			os.write(CRLF.getBytes(StandardCharsets.UTF_8));
+			os.write(CRLF.getBytes(StandardCharsets.UTF_8));
+			os.write(img);
+			os.write(CRLF.getBytes(StandardCharsets.UTF_8));
+			os.write(String.format("--%s--", boundary).getBytes(StandardCharsets.UTF_8));
+			os.write(CRLF.getBytes(StandardCharsets.UTF_8));
+			return getResponseContent(uc, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static final String CRLF = "\r\n";
 }
