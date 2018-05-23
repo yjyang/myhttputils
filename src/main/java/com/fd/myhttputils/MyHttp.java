@@ -24,6 +24,9 @@ import java.util.Map.Entry;
  *
  */
 public final class MyHttp {
+	private static final String JSON_CONTENT_TYPE = "application/json";
+	public final static String MULTIPART_CONTENT_TYPE = "multipart/form-data";
+	private static final String FORM_CONTENT_TYPE = "application/x-www-form-urlencoded";
 	private static final int D_TIMEOUT = 10000;
 
 	private static URLConnection openConnection(String url, Proxy proxy) {
@@ -176,7 +179,19 @@ public final class MyHttp {
 	 * @return
 	 */
 	public static String postForm(String url, Map<String, String> inputs) {
-		URLConnection conn = getURLConnection(url, "application/x-www-form-urlencoded", null);
+		URLConnection conn = getURLConnection(url, FORM_CONTENT_TYPE, null);
+		return postForm(inputs, conn);
+
+	}
+
+	/**
+	 * 表单提交
+	 * 
+	 * @param inputs
+	 * @param conn
+	 * @return
+	 */
+	public static String postForm(Map<String, String> inputs, URLConnection conn) {
 		try (OutputStream out = conn.getOutputStream()) {
 			if (inputs != null && inputs.size() > 0) {
 				Iterator<Entry<String, String>> ite = inputs.entrySet().iterator();
@@ -195,7 +210,6 @@ public final class MyHttp {
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
-
 	}
 
 	/**
@@ -206,7 +220,7 @@ public final class MyHttp {
 	 * @return
 	 */
 	public static String postJson(String url, String json) {
-		URLConnection conn = getURLConnection(url, "application/json", null);
+		URLConnection conn = getURLConnection(url, JSON_CONTENT_TYPE, null);
 		try (OutputStream out = conn.getOutputStream()) {
 			if (json != null && json.trim().length() > 0) {
 				out.write(json.getBytes(StandardCharsets.UTF_8));
@@ -258,7 +272,7 @@ public final class MyHttp {
 	public static String uploadFile(byte[] img, String url, String inputName, String filename, String contentType) {
 		URLConnection uc = getURLConnection(url, null, null);
 		String boundary = String.format("----WebKitFormBoundary%s", System.nanoTime());
-		uc.setRequestProperty("Content-Type", String.format("multipart/form-data; boundary=%s", boundary));
+		uc.setRequestProperty("Content-Type", String.format("%s; boundary=%s", MULTIPART_CONTENT_TYPE, boundary));
 		uc.setUseCaches(false);
 		uc.setRequestProperty("Upgrade-Insecure-Requests", "1");
 		try (OutputStream os = uc.getOutputStream();) {
